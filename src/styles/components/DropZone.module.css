@@ -1,0 +1,107 @@
+.dropZone {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-dark);
+    z-index: 20;
+    transition: all 0.3s;
+}
+
+.hidden {
+    display: none;
+}
+
+.dragover {
+    background: rgba(37, 99, 235, 0.1);
+}
+
+.dragover .dropZoneBox {
+    border-color: var(--primary);
+    background: rgba(37, 99, 235, 0.05);
+    transform: scale(1.02);
+}
+
+.dropZoneBox {
+    width: 500px;
+    max-width: 90%;
+    padding: 60px 40px;
+    border: 2px dashed var(--border);
+    border-radius: 20px;
+    text-align: center;
+    transition: all 0.3s;
+}
+
+.dropZoneIcon {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 24px;
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+}
+
+.dropZoneTitle {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 12px;
+}
+
+.dropZoneSubtitle {
+    color: var(--text-secondary);
+    margin-bottom: 24px;
+    line-height: 1.6;
+}
+
+.dropZoneFormats {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-bottom: 24px;
+}
+
+.formatBadge {
+    padding: 6px 14px;
+    background: var(--bg-card);
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--accent);
+}
+
+.dropZoneOr {
+    color: var(--text-muted);
+    margin-bottom: 16px;
+}
+
+.fileInputLabel {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    background: var(--primary);
+    color: white;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.fileInputLabel:hover {
+    background: var(--primary-hover);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+.fileInput {
+    display: none;
+}

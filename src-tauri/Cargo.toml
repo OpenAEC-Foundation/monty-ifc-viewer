@@ -1,0 +1,18 @@
+[package]
+name = "monty-ifc-viewer"
+version = "1.0.0"
+description = "Monty IFC Viewer"
+authors = ["Impertio"]
+edition = "2021"
+
+[lib]
+name = "monty_ifc_viewer_lib"
+crate-type = ["lib", "cdylib", "staticlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = ["image-png"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"

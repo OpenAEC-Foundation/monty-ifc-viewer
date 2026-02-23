@@ -1,0 +1,30 @@
+.sidebar {
+    width: 400px;
+    background: var(--bg-card);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.section {
+    padding: 20px;
+    border-bottom: 1px solid var(--border);
+}
+
+.sectionTitle {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-muted);
+    margin-bottom: 14px;
+}
+
+.mainContainer {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+}

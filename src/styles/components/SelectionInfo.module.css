@@ -1,0 +1,30 @@
+.selectionInfo {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    background: var(--bg-card);
+    padding: 10px 16px;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    color: var(--text-primary);
+    box-shadow: var(--shadow-lg);
+    z-index: 10;
+    display: none;
+    align-items: center;
+    gap: 12px;
+    border: 1px solid var(--highlight);
+}
+
+.visible {
+    display: flex;
+}
+
+.selectionInfoText {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.icon {
+    color: var(--highlight);
+}

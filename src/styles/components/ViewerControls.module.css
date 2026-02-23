@@ -1,0 +1,41 @@
+.viewerControls {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    z-index: 10;
+}
+
+.viewerControls button {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    color: var(--text-primary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    transition: all 0.2s;
+}
+
+.viewerControls button:hover {
+    background: var(--bg-card-hover);
+    border-color: var(--primary);
+    transform: translateY(-2px);
+}
+
+.hasReset {
+    background: var(--highlight) !important;
+    border-color: var(--highlight) !important;
+    color: var(--bg-dark) !important;
+}
+
+.hasReset:hover {
+    background: var(--warning) !important;
+    border-color: var(--warning) !important;
+}

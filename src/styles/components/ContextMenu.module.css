@@ -1,0 +1,40 @@
+.contextMenu {
+    position: fixed;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 6px 0;
+    min-width: 180px;
+    z-index: 100;
+    box-shadow: var(--shadow-lg);
+    display: none;
+}
+
+.visible {
+    display: block;
+}
+
+.contextMenuItem {
+    padding: 10px 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.85rem;
+    transition: background 0.15s;
+}
+
+.contextMenuItem:hover {
+    background: var(--bg-card-hover);
+}
+
+.icon {
+    width: 20px;
+    text-align: center;
+}
+
+.contextMenuDivider {
+    height: 1px;
+    background: var(--border);
+    margin: 6px 0;
+}

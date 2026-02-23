@@ -1,0 +1,31 @@
+.progressSection {
+    margin-bottom: 20px;
+}
+
+.progressBar {
+    height: 8px;
+    background: var(--bg-input);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 10px;
+    cursor: pointer;
+}
+
+.progressFill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary), var(--accent));
+    width: 0%;
+    transition: width 0.3s ease-out;
+    border-radius: 4px;
+}
+
+.progressStats {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+.progressStats span {
+    font-family: 'JetBrains Mono', monospace;
+}
