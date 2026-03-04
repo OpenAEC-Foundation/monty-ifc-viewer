@@ -9,74 +9,15 @@ on:
 permissions:
   contents: read
 
-concurrency:
-  group: deploy-site
-  cancel-in-progress: true
-
-env:
-  DEPLOY_HOST: ${{ vars.DEPLOY_HOST }}
-  DEPLOY_PORT: ${{ vars.DEPLOY_PORT }}
-  DEPLOY_USER: ${{ vars.DEPLOY_USER }}
-  DEPLOY_PATH: ${{ vars.DEPLOY_PATH }}
-  DEPLOY_SOURCE: ${{ vars.DEPLOY_SOURCE }}
-  NODE_VERSION: ${{ vars.NODE_VERSION }}
-  SETUP_COMMAND: ${{ vars.SETUP_COMMAND }}
-  INSTALL_COMMAND: ${{ vars.INSTALL_COMMAND }}
-  BUILD_COMMAND: ${{ vars.BUILD_COMMAND }}
-
 jobs:
   deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out repository
-        uses: actions/checkout@v4
-
-      - name: Set up Node.js
-        if: ${{ env.NODE_VERSION != '' }}
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-
-      - name: Run setup command
-        if: ${{ env.SETUP_COMMAND != '' }}
-        run: ${{ env.SETUP_COMMAND }}
-
-      - name: Run install command
-        if: ${{ env.INSTALL_COMMAND != '' }}
-        run: ${{ env.INSTALL_COMMAND }}
-
-      - name: Run build command
-        if: ${{ env.BUILD_COMMAND != '' }}
-        run: ${{ env.BUILD_COMMAND }}
-
-      - name: Validate deploy configuration
-        run: |
-          : "${DEPLOY_HOST:?DEPLOY_HOST is required}"
-          : "${DEPLOY_USER:?DEPLOY_USER is required}"
-          : "${DEPLOY_PATH:?DEPLOY_PATH is required}"
-
-      - name: Start SSH agent
-        uses: webfactory/ssh-agent@v0.9.0
-        with:
-          ssh-private-key: ${{ secrets.DEPLOY_SSH_KEY }}
-
-      - name: Trust deploy host
-        run: |
-          PORT="${DEPLOY_PORT:-22}"
-          mkdir -p ~/.ssh
-          ssh-keyscan -p "$PORT" -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts
-
-      - name: Sync files to server
-        run: |
-          PORT="${DEPLOY_PORT:-22}"
-          SOURCE_DIR="${DEPLOY_SOURCE:-.}"
-
-          if [ ! -d "$SOURCE_DIR" ]; then
-            echo "Deploy source directory '$SOURCE_DIR' does not exist." >&2
-            exit 1
-          fi
-
-          rsync -az --delete \
-            -e "ssh -p $PORT" \
-            "$SOURCE_DIR"/ \
-            "$DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_PATH/"
+    uses: OpenAEC-Foundation/github/.github/workflows/deploy-site.yml@main
+    with:
+      deploy_path: ${{ vars.DEPLOY_PATH }}
+      deploy_source: ${{ vars.DEPLOY_SOURCE }}
+      node_version: ${{ vars.NODE_VERSION }}
+      setup_command: ${{ vars.SETUP_COMMAND }}
+      install_command: ${{ vars.INSTALL_COMMAND }}
+      build_command: ${{ vars.BUILD_COMMAND }}
+    secrets:
+      deploy_ssh_key: ${{ secrets.DEPLOY_SSH_KEY }}
