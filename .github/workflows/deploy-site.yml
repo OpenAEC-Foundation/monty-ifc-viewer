@@ -16,11 +16,10 @@ jobs:
       deploy_host: ${{ vars.DEPLOY_HOST }}
       deploy_port: ${{ vars.DEPLOY_PORT }}
       deploy_user: ${{ vars.DEPLOY_USER }}
-      deploy_path: ${{ vars.DEPLOY_PATH }}
-      deploy_source: ${{ vars.DEPLOY_SOURCE }}
-      node_version: ${{ vars.NODE_VERSION }}
-      setup_command: ${{ vars.SETUP_COMMAND }}
-      install_command: ${{ vars.INSTALL_COMMAND }}
-      build_command: ${{ vars.BUILD_COMMAND }}
+      deploy_path: /var/www/monty-ifc-viewer.open-aec.com
+      deploy_source: dist
+      node_version: "20"
+      install_command: npm ci
+      build_command: npm run build
     secrets:
       deploy_ssh_key: ${{ secrets.DEPLOY_SSH_KEY }}
