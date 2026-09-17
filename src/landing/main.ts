@@ -7,16 +7,16 @@ declare global {
   }
 }
 
-// Config: injected via window.MONTY_CONFIG, or via /{client}/ path, or ?client=SLUG, or fallback jm.
+// Config: injected via window.MONTY_CONFIG, or via /{client}/ path, or ?client=SLUG, or the OpenAEC demo.
 function readClientSlug(): string {
   const seg = location.pathname.split("/").filter(Boolean)[0]?.toLowerCase();
   if (seg && seg !== "landing" && CLIENT_CONFIGS[seg]) return seg;
   const q = new URLSearchParams(location.search).get("client")?.toLowerCase();
   if (q && CLIENT_CONFIGS[q]) return q;
-  return "jm";
+  return "demo";
 }
 const slug = readClientSlug();
-const cfg: MontyConfig = window.MONTY_CONFIG ?? CLIENT_CONFIGS[slug] ?? CLIENT_CONFIGS.jm;
+const cfg: MontyConfig = window.MONTY_CONFIG ?? CLIENT_CONFIGS[slug] ?? CLIENT_CONFIGS.demo;
 const IS_PAID = cfg.plan === "paid";
 const { client: CLIENT_NAME, freeLimit: FREE_LIMIT, projects: PROJECTS } = cfg;
 

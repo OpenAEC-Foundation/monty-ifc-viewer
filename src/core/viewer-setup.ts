@@ -12,7 +12,7 @@ import {
   type IViewer,
 } from "@speckle/viewer";
 
-const SPECKLE_SERVER = "https://app.montyviewer.com";
+const SPECKLE_SERVER = "https://speckle.open-aec.com";
 
 export interface ViewerInstance {
   viewer: IViewer;

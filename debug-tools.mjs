@@ -1,6 +1,6 @@
 import { chromium } from "playwright";
 
-const url = "http://localhost:3000/?project=6aa8af2d3e";
+const url = "http://localhost:3052/demo/pr1";
 const browser = await chromium.launch({ headless: true });
 const page = await browser.newPage({ viewport: { width: 1280, height: 720 } });
 

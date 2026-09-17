@@ -24,7 +24,7 @@ export interface LoadedModel {
  *   ?project=abc123              — load all models
  *   ?project=abc123&model=name   — load specific branch
  *   ?project=abc123&object=id    — load specific object
- *   ?url=https://app.montyviewer.com/projects/abc123/models/def456
+ *   ?url=https://speckle.open-aec.com/projects/abc123/models/def456
  */
 export function parseStreamParams(): StreamParams | null {
   const params = new URLSearchParams(window.location.search);

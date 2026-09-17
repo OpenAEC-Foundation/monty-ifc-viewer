@@ -4,10 +4,10 @@ Web-based IFC viewer met **bouwvolgorde visualisatie** voor 3BM Engineering.
 Klanten krijgen een link, openen de viewer op tablet/telefoon, en zien hun model met bouwvolgorde + meettools.
 
 **Status:** MVP live — bouwvolgorde, context menu, multi-select, linked Mark, meettools, model toggle, day/night, **landing page met projectoverzicht per klant**
-**Live URL:** https://montyviewer.vercel.app/?project=6aa8af2d3e
-**Landing:** https://montyviewer.vercel.app/landing/?client=demo
-**GitHub:** https://github.com/piyton/montyviewer (private)
-**Speckle server:** https://app.montyviewer.com (self-hosted, Docker op NAS)
+**Live URL:** https://monty-ifc-viewer.open-aec.com/demo/pr1
+**Landing:** https://monty-ifc-viewer.open-aec.com/demo/
+**GitHub:** https://github.com/OpenAEC-Foundation/monty-ifc-viewer
+**Speckle server:** https://speckle.open-aec.com (self-hosted, Docker op open-aec.com)
 
 ---
 
@@ -34,7 +34,7 @@ Layer 0: Three.js          — 3D rendering
 
 ```
 Piet exporteert IFC uit Revit
-  → Revit Connector push naar app.montyviewer.com (Speckle)
+  → Revit Connector push naar speckle.open-aec.com (Speckle)
   → project toevoegen aan src/landing/projects-config.ts
   → klant krijgt link: montyviewer.vercel.app/landing/?client=SLUG
   → klant klikt project → viewer opent met ?project=PROJECT_ID
@@ -42,8 +42,8 @@ Piet exporteert IFC uit Revit
 
 ### Nieuw project delen
 
-1. Push vanuit Revit naar Speckle (`app.montyviewer.com`)
-2. Kopieer project-ID uit Speckle URL: `app.montyviewer.com/projects/XXXXXX`
+1. Push vanuit Revit naar Speckle (`speckle.open-aec.com`)
+2. Kopieer project-ID uit Speckle URL: `speckle.open-aec.com/projects/XXXXXX`
 3. Voeg toe aan `src/landing/projects-config.ts` (of gebruik `/landing/config-invullen.html`)
 4. Push naar main → Vercel deployt automatisch
 5. Deel: `https://montyviewer.vercel.app/landing/?client=SLUG`
@@ -69,7 +69,7 @@ Piet exporteert IFC uit Revit
 - Branch support: meerdere IFC-modellen per project, los aan/uit te zetten
 - REST API voor properties: geen client-side IFC parsing meer nodig
 - Publieke streams: geen auth nodig voor viewer (link = toegang)
-- Self-hosted op eigen NAS (`app.montyviewer.com`): data ownership
+- Self-hosted op open-aec.com (`speckle.open-aec.com`): data ownership
 - Bestaande Revit Connector: geen custom export tooling nodig
 
 **Trade-off:** Speckle viewer is een black box (niet wijzigen, alleen wrappen via publieke API). In ruil daarvoor: snellere time-to-market, betrouwbaardere stack, en een workflow die past bij hoe 3BM al werkt (Revit → server → link delen).
@@ -231,7 +231,7 @@ git push          # Vercel bouwt en deployt automatisch
 - **`requestRender()`** nodig na `hideObjects`/`isolateObjects` vanuit context menu (buiten Speckle's eigen event loop)
 - **Overlay `pointer-events: none`** — alle child-elementen die klikbaar moeten zijn hebben `pointer-events: auto` nodig
 - **npm overrides** nodig voor `@speckle/objectloader2` en `@speckle/shared` (v2.25.4)
-- **Speckle server** draait op `app.montyviewer.com` (Docker/Synology NAS)
+- **Speckle server** draait op `speckle.open-aec.com` (Docker op open-aec.com)
 - Streams zijn publiek — geen auth nodig voor viewer
 - **Speckle `previewImage` GraphQL veld bestaat NIET** op deze server versie — gebruik REST `/preview/{projectId}` (retourneert PNG met `Access-Control-Allow-Origin: *`)
 - **Vite multi-page**: `landing/index.html` als aparte entry in `vite.config.ts` → `rollupOptions.input` met `resolve()`. URL = `/landing/` in zowel dev als prod
@@ -353,7 +353,8 @@ Revit Connector kan schedules exporteren als `DataTable` objecten. Ophalen via G
 
 ## Test Data
 
-- **Project 6aa8af2d3e**: CLT constructie met 3 branches, 381 elementen, 110 Mark fases
-- **CLT TAG Generic Models**: family `00_CLT TAG`, level "No Level", types: NSI-ISI, ISI-NSI, NSI-NSI, ISI-ISI
-- **Parts**: Mark in Identity Data, CLT TAGs: CLT_T_Mark in Text groep
-- NAS: `Z:\50_projecten\5_3BM_engineering\0001_3BM Engineering Documentatie\IA\Project Montyviewer\`
+- OpenAEC Speckle project `5e0fe816a2`: **2690 CLT as built**, supplied IFC2X3 example.
+- Model `1e024f2485`, imported version `7af331d0be`, 390 converted geometries.
+- Live viewer: https://monty-ifc-viewer.open-aec.com/demo/pr1
+- Server deployment and operating instructions: `deploy/speckle/README.md`.
+- The previous NAS projects are offline and are not in the active project catalog.

@@ -88,7 +88,7 @@ function addProject(data) {
   div.innerHTML = `
     <button class="remove" onclick="this.parentElement.remove()" title="Verwijder">&times;</button>
     <div class="row">
-      <div><label>Speckle Project ID *</label><input data-f="id" value="${d.id||''}" placeholder="bijv. 6aa8af2d3e"></div>
+      <div><label>Speckle Project ID *</label><input data-f="id" value="${d.id||''}" placeholder="bijv. 5e0fe816a2"></div>
       <div><label>Titel *</label><input data-f="title" value="${d.title||''}" placeholder="Projectnaam"></div>
     </div>
     <div class="full" style="margin-bottom:12px"><label>Beschrijving</label><input data-f="description" value="${d.description||''}" placeholder="Korte omschrijving"></div>
@@ -169,7 +169,7 @@ function generate() {
     if (p.location) s += `    location: "${p.location}",\n`;
     if (p.lat) s += `    lat: ${p.lat},\n`;
     if (p.lng) s += `    lng: ${p.lng},\n`;
-    s += `    speckleBase: "https://app.montyviewer.com",\n`;
+    s += `    speckleBase: "https://speckle.open-aec.com",\n`;
     s += '  }';
     return s;
   }).join(',\n');
@@ -202,7 +202,7 @@ function copyOutput() {
 }
 
 // Start met 1 leeg project
-addProject({ id: '6aa8af2d3e', title: 'TV Luck Raeck', description: 'CLT houtskeletbouw constructie', type: 'wonen', phase: 'Uitvoering', updated: '2026-03-30', elements: 381, active: true, location: 'Zwijndrecht', lat: 51.8167, lng: 4.6333 });
+addProject({ id: '5e0fe816a2', title: '2690 CLT as built', description: 'PR235078 CLT Woning — IFC voorbeeldmodel', type: 'wonen', phase: 'Uitvoering', updated: '2026-09-17', elements: 390, active: true, location: 'Rotterdam' });
 addProject();
 </script>
 </body>

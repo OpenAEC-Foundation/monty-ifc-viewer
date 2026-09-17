@@ -1,0 +1,165 @@
+name: openaec-speckle
+
+x-service: &service
+  restart: unless-stopped
+  logging:
+    driver: json-file
+    options:
+      max-size: 10m
+      max-file: '3'
+
+services:
+  postgres:
+    <<: *service
+    image: postgres:16-alpine@sha256:cf78e76683b9ca8c5733cbbdce6c9262b45b6767934dd0a95e671f9a0fc20685
+    environment:
+      POSTGRES_DB: speckle
+      POSTGRES_USER: speckle
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?required}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: [CMD-SHELL, 'pg_isready -U speckle -d speckle']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    <<: *service
+    image: valkey/valkey:8-alpine@sha256:d2e18f3410b6f616de1417f570fa55261af2898b9c5b2cfb6781ce2373ea43d1
+    command: valkey-server --appendonly yes
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: [CMD, valkey-cli, ping]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  minio:
+    <<: *service
+    image: openaec/minio:RELEASE.2025-10-15T17-29-55Z@sha256:29469de0d94a831548b9ab51817b58ee66a5828b4a30b34da59197c4f655cddb
+    build:
+      context: .
+      dockerfile: Minio.Dockerfile
+    command: server /data --console-address ':9001'
+    environment:
+      MINIO_ROOT_USER: ${S3_ACCESS_KEY:?required}
+      MINIO_ROOT_PASSWORD: ${S3_SECRET_KEY:?required}
+    ports:
+      - '127.0.0.1:19000:9000'
+    volumes:
+      - minio-data:/data
+
+  speckle-ingress:
+    <<: *service
+    image: speckle/speckle-docker-compose-ingress:2.31.14@sha256:c781da418b0154a61df60c7940dc6a01d200b091c76514cca7f0c40fa05cc4d4
+    ports:
+      - '127.0.0.1:18080:8080'
+    environment:
+      FILE_SIZE_LIMIT_MB: '100'
+      NGINX_ENVSUBST_OUTPUT_DIR: /etc/nginx
+    depends_on:
+      - speckle-server
+      - speckle-frontend-2
+
+  speckle-frontend-2:
+    <<: *service
+    image: speckle/speckle-frontend-2:2.31.14@sha256:0becacf171acd8e566b8cf6ff6884bc2a433a0d2828ab145c54ea163f9a91276
+    environment:
+      NUXT_PUBLIC_SERVER_NAME: OpenAEC Speckle
+      NUXT_PUBLIC_API_ORIGIN: https://speckle.open-aec.com
+      NUXT_PUBLIC_BACKEND_API_ORIGIN: http://speckle-server:3000
+      NUXT_PUBLIC_BASE_URL: https://speckle.open-aec.com
+      NUXT_REDIS_URL: redis://redis
+      NUXT_PUBLIC_SSL_ENABLED: 'true'
+      NUXT_PUBLIC_FF_LARGE_FILE_IMPORTS_ENABLED: 'true'
+      NUXT_PUBLIC_FF_NEXT_GEN_FILE_IMPORTER_ENABLED: 'true'
+      NUXT_PUBLIC_LOG_LEVEL: warn
+    depends_on:
+      speckle-server:
+        condition: service_healthy
+
+  speckle-server:
+    <<: *service
+    image: speckle/speckle-server:2.31.14@sha256:02f1332513154ef54864a2850318b787947bd80c1645dde3fd4e572e549f773b
+    environment:
+      CANONICAL_URL: https://speckle.open-aec.com
+      FRONTEND_ORIGIN: https://speckle.open-aec.com
+      PRIVATE_OBJECTS_SERVER_URL: http://speckle-server:3000
+      SESSION_SECRET: ${SESSION_SECRET:?required}
+      STRATEGY_LOCAL: 'true'
+      POSTGRES_URL: postgres
+      POSTGRES_USER: speckle
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?required}
+      POSTGRES_DB: speckle
+      REDIS_URL: redis://redis
+      PREVIEW_SERVICE_USE_PRIVATE_OBJECTS_SERVER_URL: 'true'
+      PREVIEW_SERVICE_REDIS_URL: redis://redis
+      FILEIMPORT_SERVICE_USE_PRIVATE_OBJECTS_SERVER_URL: 'true'
+      FILEIMPORT_SERVICE_REDIS_URL: redis://redis
+      FILEIMPORT_QUEUE_POSTGRES_URL: postgresql://speckle:${POSTGRES_PASSWORD:?required}@postgres/speckle
+      FF_NEXT_GEN_FILE_IMPORTER_ENABLED: 'true'
+      S3_ENDPOINT: http://minio:9000
+      S3_PUBLIC_ENDPOINT: https://speckle-files.open-aec.com
+      S3_ACCESS_KEY: ${S3_ACCESS_KEY:?required}
+      S3_SECRET_KEY: ${S3_SECRET_KEY:?required}
+      S3_BUCKET: speckle-server
+      S3_CREATE_BUCKET: 'true'
+      S3_REGION: us-east-1
+      FILE_SIZE_LIMIT_MB: '100'
+      EMAIL: 'false'
+      ENABLE_MP: 'false'
+      LOG_LEVEL: info
+      LOG_PRETTY: 'false'
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_started
+    healthcheck:
+      test: [CMD, /nodejs/bin/node, -e, "fetch('http://127.0.0.1:3000/readiness').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 90s
+
+  preview-service:
+    <<: *service
+    image: speckle/speckle-preview-service:2.31.14@sha256:b1254caa7ac908ba567e82e2ccf4058b64398a5e4f5989bf8e92ed0581904729
+    mem_limit: 3g
+    environment:
+      HOST: 127.0.0.1
+      PORT: '3001'
+      REDIS_URL: redis://redis
+      LOG_LEVEL: info
+    depends_on:
+      speckle-server:
+        condition: service_healthy
+
+  webhook-service:
+    <<: *service
+    image: speckle/speckle-webhook-service:2.31.14@sha256:507c79093d33f1ac21ec47eaaa760de1a6ddf9630fa722cc52807e6431efec16
+    environment:
+      PG_CONNECTION_STRING: postgres://speckle:${POSTGRES_PASSWORD:?required}@postgres/speckle
+      LOG_LEVEL: info
+    depends_on:
+      speckle-server:
+        condition: service_healthy
+
+  ifc-import-service:
+    <<: *service
+    image: speckle/speckle-ifc-import-service:2.31.14@sha256:a8c008f7cb7f70644e45788e95d86bb7572b70bdbe8d4fa101dfad58a0891659
+    mem_limit: 4g
+    environment:
+      FILEIMPORT_QUEUE_POSTGRES_URL: postgresql://speckle:${POSTGRES_PASSWORD:?required}@postgres/speckle
+    depends_on:
+      speckle-server:
+        condition: service_healthy
+
+volumes:
+  postgres-data:
+  redis-data:
+  minio-data:

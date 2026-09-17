@@ -30,120 +30,38 @@ export const PHASE_STYLES: Record<string, { bg: string; color: string; border: s
   "Gemonteerd": { bg: "#F0FDF4", color: "#14532D", border: "rgba(22,163,74,.2)" },
 };
 
-// ── Projecten (single source of truth — gedeeld tussen klanten) ──
-
-const KRALINGSEWEG: Project = {
-  id: "b48733162c",
-  title: "PR235078 Woning Kralingseweg 370 Rotterdam",
-  description: "CLT Woning Kralingseweg 370 Rotterdam",
+// Project available on the OpenAEC Speckle server.
+const EXAMPLE: Project = {
+  id: "5e0fe816a2",
+  title: "2690 CLT as built",
+  description: "PR235078 CLT Woning — IFC voorbeeldmodel",
   type: "wonen",
-  phase: "Uitvoering",
-  updated: "2026-03-30",
+  phase: "Gemonteerd",
+  updated: "2026-09-17",
   elements: 0,
   active: true,
   location: "Rotterdam",
-  lat: 51.9225,
-  lng: 4.4792,
-  speckleBase: "https://app.montyviewer.com",
+  speckleBase: "https://speckle.open-aec.com",
 };
-
-const LEEUWENHOEK: Project = {
-  id: "25349df1bc",
-  title: "PR235031 Leeuwenhoek PZ09 Delft",
-  description: "CLT Appartementencomplex Leeuwenhoek PZ09 Delft",
-  type: "wonen",
-  phase: "Gemonteerd",
-  updated: "2026-03-30",
-  elements: 0,
-  active: true,
-  location: "Delft",
-  lat: 52.0116,
-  lng: 4.3571,
-  speckleBase: "https://app.montyviewer.com",
-};
-
-const BLAUWGROEP: Project = {
-  id: "8225330c71",
-  title: "CLT Appartementen Blauwgroep Delft",
-  description: "CLT Appartementen Blauwgroep Delft",
-  type: "wonen",
-  phase: "Uitvoering",
-  updated: "2026-04-13",
-  elements: 0,
-  active: true,
-  location: "Delft",
-  lat: 52.0116,
-  lng: 4.3571,
-  speckleBase: "https://app.montyviewer.com",
-};
-
-const LUCK_RAECK: Project = {
-  id: "6aa8af2d3e",
-  title: "JM25-020 TV Luck Raeck",
-  description: "CLT en Glulam Tennisvereniging TV Luck Raeck",
-  type: "sport",
-  phase: "Gemonteerd",
-  updated: "2026-03-30",
-  elements: 381,
-  active: true,
-  location: "Maarssen",
-  lat: 52.1363,
-  lng: 5.0418,
-  speckleBase: "https://app.montyviewer.com",
-};
-
-const ARK_TIMMERMANS: Project = {
-  id: "0b1a327e52",
-  title: "JM25-082 Ark Timmermans",
-  description: "Waterwoning Westland Weesp",
-  type: "wonen",
-  phase: "Uitvoering",
-  updated: "2026-04-21",
-  elements: 0,
-  active: true,
-  location: "Weesp",
-  lat: 52.3080,
-  lng: 5.0419,
-  speckleBase: "https://app.montyviewer.com",
-};
-
-const AMSTELDIJK: Project = {
-  id: "4e5da159c4",
-  title: "JM25-074 Amsteldijk 802 Amsterdam",
-  description: "Waterwoning Amsteldijk 802",
-  type: "wonen",
-  phase: "Gemonteerd",
-  updated: "2026-03-16",
-  elements: 0,
-  active: false,
-  location: "Amsterdam",
-  lat: 52.3446,
-  lng: 4.9168,
-  speckleBase: "https://app.montyviewer.com",
-};
-
-// ── Klant-configs ──
-// Locked cards: in main.ts geldt `locked = origIdx >= freeLimit`, dus volgorde telt.
 
 export const CLIENT_CONFIGS: Record<string, MontyConfig> = {
   jm: {
     client: "JM Concepten",
     freeLimit: 3,
-    projects: [KRALINGSEWEG, LEEUWENHOEK, BLAUWGROEP, LUCK_RAECK, AMSTELDIJK],
+    projects: [EXAMPLE],
   },
   domera: {
     client: "Domera",
     freeLimit: 3,
-    projects: [KRALINGSEWEG, AMSTELDIJK, ARK_TIMMERMANS],
+    projects: [EXAMPLE],
   },
   demo: {
-    client: "Demo",
+    client: "OpenAEC Demo",
     freeLimit: 3,
     plan: "paid",
-    projects: [KRALINGSEWEG, LEEUWENHOEK, BLAUWGROEP, LUCK_RAECK, AMSTELDIJK],
+    projects: [EXAMPLE],
   },
 };
 
-export const PROJECTS: Project[] = CLIENT_CONFIGS.jm.projects;
-
-export const DEFAULT_CONFIG: MontyConfig = CLIENT_CONFIGS.jm;
+export const PROJECTS: Project[] = CLIENT_CONFIGS.demo.projects;
+export const DEFAULT_CONFIG: MontyConfig = CLIENT_CONFIGS.demo;
