@@ -38,7 +38,7 @@ services:
 
   minio:
     <<: *service
-    image: openaec/minio:RELEASE.2025-10-15T17-29-55Z@sha256:29469de0d94a831548b9ab51817b58ee66a5828b4a30b34da59197c4f655cddb
+    image: openaec/minio:RELEASE.2025-10-15T17-29-55Z
     build:
       context: .
       dockerfile: Minio.Dockerfile
