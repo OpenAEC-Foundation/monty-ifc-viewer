@@ -71,6 +71,14 @@ pushes to `main`. `deploy/monty-nginx.conf` routes one-segment client paths to
 the landing page and project paths to the viewer. This custom Nginx file is
 preserved by the shared deployment workflow.
 
+When changing that config, install it at
+`/etc/nginx/sites-available/monty-ifc-viewer.open-aec.com`, run `nginx -t`, and
+reload nginx. HTML uses `Cache-Control: no-store`; hashed assets use immutable
+caching and return 404 when missing, never the viewer HTML. Browsers that cached
+HTML before this policy was deployed need one hard refresh. `npm run test:deployment`
+checks the live entry points, asset MIME types, caching and missing-asset responses.
+The deployment workflow runs this check after publishing.
+
 For future models, log into Speckle, create a project/model and upload the IFC.
 Add its project ID to `src/landing/projects-config.ts`, then build and deploy
 Monty. No Speckle access token belongs in the public frontend.

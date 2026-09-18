@@ -27,3 +27,14 @@ jobs:
       deploy_source: dist
     secrets:
       deploy_ssh_key: ${{ secrets.DEPLOY_SSH_KEY }}
+
+  verify-deployment:
+    needs: deploy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+      - name: Verify live HTML, asset MIME types, and missing-asset responses
+        run: npm run test:deployment
