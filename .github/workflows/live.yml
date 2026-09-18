@@ -23,7 +23,7 @@ jobs:
       deploy_path: /var/www/monty-ifc-viewer.open-aec.com
       node_version: "22"
       install_command: npm ci
-      build_command: npm run build
+      build_command: npm test && npm run build
       deploy_source: dist
     secrets:
       deploy_ssh_key: ${{ secrets.DEPLOY_SSH_KEY }}

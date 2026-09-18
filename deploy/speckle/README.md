@@ -16,7 +16,10 @@ Monty catalog. This deployment contains the user-supplied example only.
 - Successful IFC import, 390 geometries; browser verified 390 rendered meshes.
 
 The example is public so Monty can load it without a user token. Administration
-requires login. Server registration is invite-only. Administrator credentials
+requires login at https://speckle.open-aec.com/authn/login. The existing account
+is `admin@open-aec.com`; the first login opens onboarding, which can be skipped.
+No separate Maarten account has been provisioned. Accounts from the offline NAS
+are not present on this server. Server registration is invite-only. Administrator credentials
 are in `/opt/openaec-speckle/admin-credentials.json`, readable by root only.
 Email is disabled; an SMTP service has not been configured.
 
@@ -80,8 +83,14 @@ Monty. No Speckle access token belongs in the public frontend.
 - Anonymous GraphQL and object access work for the public example.
 - Speckle generated a model preview and successfully completed the IFC job.
 - Original and server IFC file checksums match.
-- The existing construction-sequence add-on scans `RevitObject` values only.
-  IFC imports use `DataObject`, so this model does not activate that add-on.
+- The construction-sequence parser supports IFC `DataObject` property sets and
+  direct Revit connector parameters. This example has 388 marked elements,
+  386 distinct Marks, 13 Original Types and 11 hundred-number collections.
+  IFC metadata is read from the loaded model; Revit parameters use the REST API.
+- `npm test` checks both export formats and CLT tag precedence. With `npm run dev`
+  running, use `MONTY_BASE_URL=http://127.0.0.1:3052 npm run test:browser` to verify
+  playback, stepping, slider selection, Mark/type filters and reset against the
+  example project. Set `CHROME_PATH` if Chrome is not `/usr/bin/google-chrome`.
 - The existing frontend lockfile reports 14 npm audit findings (6 high,
   8 moderate). Dependency upgrades are outside this server/connection change.
 

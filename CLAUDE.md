@@ -105,7 +105,8 @@ montyviewer/
     addons/
       bouwvolgorde/           # CORE FEATURE
         index.ts              # Public API exports
-        mark-parser.ts        # Mark property extractor (batch API fetch)
+        mark-parser.ts        # IFC/Revit Mark mapping en collectie/type filters
+        mark-properties.ts    # Normalisatie van IFC property sets en Revit parameters
         phase-manager.ts      # Fase kleuring + ghosting via isolateObjects
         timeline-ui.ts        # Slider/stepper/play component
     ui/
@@ -181,8 +182,8 @@ git push          # Vercel bouwt en deployt automatisch
 
 ## Bouwvolgorde — Hoe het werkt
 
-1. **mark-parser.ts**: Loopt WorldTree, vindt RevitObjects met `category`
-2. Batch-fetch via Speckle REST API: eerst `CLT_T_Mark` (Text groep), dan `Mark` (Identity Data). Mark=0 wordt genegeerd.
+1. **mark-parser.ts**: Loopt WorldTree, vindt IFC `DataObject` elementen met `ifcType` en directe `RevitObject` exports.
+2. **mark-properties.ts**: Leest IFC `Property Sets` uit het geladen model; Revit `Parameters > Instance Parameters` via de REST API. Eerst `CLT_T_Mark` (Text groep), dan `Mark` (Identity Data). Mark=0 wordt genegeerd.
 3. Bouwt `PhaseMapping`: gesorteerde fases, markToIds map, nodeIdToMark reverse lookup, unmarkedIds
 4. **phase-manager.ts**: `isolateObjects(visibleIds, ghost=true)` voor ghosting + `setUserObjectColors` voor oranje highlight
 5. **timeline-ui.ts**: Slider, play/pause, prev/next, speed control
@@ -254,7 +255,7 @@ git push          # Vercel bouwt en deployt automatisch
 11. **BCF**: Topics, viewpoints, import/export
 12. **UI polish**: Betere iconen, loading states, error handling
 13. **Hierarchie tree**: IFC spatial structure sidebar
-14. **Performance**: Mark parser caching (nu batch-fetch bij elke load)
+14. **Performance**: Revit parameter caching (IFC properties worden al uit het geladen model gelezen)
 15. **Self-hosting**: Van Vercel af, hosten op eigen NAS/extern (zie "Projecten Overview" niveau 2/3)
 16. **Commercieel**: Custom domein, branding per klant
 

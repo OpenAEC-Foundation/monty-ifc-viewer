@@ -1,5 +1,6 @@
 import type { IViewer } from "@speckle/viewer";
 import { SPECKLE_SERVER } from "../../core/viewer-setup";
+import { isIfcElement, isSequenceElement, readSequenceProperties, type SequenceObject, type SequenceProperties } from "./mark-properties";
 
 export interface PhaseMapping {
   /** Sorted unique mark values (phases) */
@@ -24,12 +25,12 @@ export interface PhaseMapping {
 
 interface ElementInfo {
   nodeId: string;
-  objectId: string;
+  object: SequenceObject;
 }
 
 /**
  * Parse Mark property from all elements in the model.
- * Walks the WorldTree, batch-fetches Mark values from Speckle API.
+ * Reads loaded IFC property sets; fetches parameter groups for Revit exports.
  */
 export async function parseMarks(
   viewer: IViewer,
@@ -39,16 +40,15 @@ export async function parseMarks(
   const tree = viewer.getWorldTree();
   if (!tree) throw new Error("WorldTree not available");
 
-  // Collect all node IDs from the tree, and RevitObjects separately for Mark scanning
+  // Collect elements from both IFC imports and direct Revit connector exports.
   const elements: ElementInfo[] = [];
   const allNodeIds = new Set<string>();
   tree.walk((node) => {
     const raw = node.model?.raw;
     if (raw?.id) {
       allNodeIds.add(raw.id);
-      // RevitObjects can have Mark or CLT_T_Mark properties
-      if (raw.category && raw.speckle_type?.includes("RevitObject")) {
-        elements.push({ nodeId: raw.id, objectId: raw.id });
+      if (isSequenceElement(raw)) {
+        elements.push({ nodeId: raw.id, object: raw });
       }
     }
     return true;
@@ -56,7 +56,7 @@ export async function parseMarks(
 
   console.log(`Bouwvolgorde: found ${elements.length} elements to scan`);
 
-  // Batch-fetch Mark + Type values from Speckle API
+  // Use the format-specific metadata source for Mark + Type values.
   const markToIds = new Map<string, string[]>();
   const nodeIdToMark = new Map<string, string>();
   const typeToIds = new Map<string, string[]>();
@@ -72,7 +72,9 @@ export async function parseMarks(
   for (let i = 0; i < elements.length; i += BATCH_SIZE) {
     const batch = elements.slice(i, i + BATCH_SIZE);
     const results = await Promise.all(
-      batch.map((el) => fetchMarkAndType(projectId, el.objectId))
+      batch.map((el) => isIfcElement(el.object)
+        ? readSequenceProperties(el.object)
+        : fetchMarkAndType(projectId, el.nodeId))
     );
 
     for (let j = 0; j < batch.length; j++) {
@@ -152,82 +154,14 @@ export async function parseMarks(
   return { phases, markToIds, allMarkedIds, unmarkedIds, nodeIdToMark, typeToIds, nodeIdToType, collectieToIds, cltTagIds };
 }
 
-interface FetchResult {
-  mark: string | null;
-  originalType: string | null;
-  /** True when mark was resolved via CLT_T_Mark (Text group) — indicates 00_CLT TAG family */
-  fromCltTag: boolean;
-}
-
 async function fetchMarkAndType(
   projectId: string,
   objectId: string
-): Promise<FetchResult> {
-  try {
-    const url = `${SPECKLE_SERVER}/objects/${projectId}/${objectId}/single`;
-    const resp = await fetch(url);
-    if (!resp.ok) return { mark: null, originalType: null, fromCltTag: false };
-
-    const obj = await resp.json();
-    const instanceParams =
-      obj?.properties?.Parameters?.["Instance Parameters"];
-
-    // --- CLT TAG detection: Generic Models with family "00_CLT TAG", or presence of
-    // CLT_T_Mark parameter. Runs independent of mark extraction, because CLT tags can
-    // pick up a mark via Identity Data instead of CLT_T_Mark.
-    let fromCltTag = false;
-    if (obj?.category === "Generic Models") {
-      const family = obj?.family ?? obj?.Family;
-      if (typeof family === "string" && family.toLowerCase().includes("clt tag")) {
-        fromCltTag = true;
-      }
-    }
-    const textGroup = instanceParams?.["Text"];
-    if (!fromCltTag && textGroup && (textGroup["CLT_T_Mark"] || textGroup["clt_t_mark"])) {
-      fromCltTag = true;
-    }
-
-    if (!instanceParams) return { mark: null, originalType: null, fromCltTag };
-
-    // --- Mark ---
-    let mark: string | null = null;
-
-    // Check Text → CLT_T_Mark first (Generic Models with CLT tags)
-    // Must be checked before Identity Data/Mark because CLT TAGs have Mark=0
-    if (textGroup) {
-      const cltParam = textGroup["CLT_T_Mark"] || textGroup["clt_t_mark"];
-      if (cltParam) {
-        const value = cltParam.value ?? cltParam;
-        if (value !== null && value !== undefined && value !== "" && String(value) !== "0") {
-          mark = String(value);
-        }
-      }
-    }
-
-    // Check Identity Data → Mark (Parts, structural elements)
-    const identityData = instanceParams["Identity Data"];
-    if (!mark && identityData) {
-      const markParam = identityData.Mark || identityData.mark;
-      if (markParam) {
-        const value = markParam.value ?? markParam;
-        if (value !== null && value !== undefined && value !== "" && String(value) !== "0")
-          mark = String(value);
-      }
-    }
-
-    // --- Original Type ---
-    let originalType: string | null = null;
-    if (identityData) {
-      const typeParam = identityData["Original Type"] || identityData["original type"] || identityData["Type Name"] || identityData["type name"];
-      if (typeParam) {
-        const value = typeParam.value ?? typeParam;
-        if (value !== null && value !== undefined && value !== "")
-          originalType = String(value);
-      }
-    }
-
-    return { mark, originalType, fromCltTag };
-  } catch {
-    return { mark: null, originalType: null, fromCltTag: false };
+): Promise<SequenceProperties> {
+  const url = `${SPECKLE_SERVER}/objects/${projectId}/${objectId}/single`;
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`Sequence metadata request failed (${response.status}) for object ${objectId}`);
   }
+  return readSequenceProperties(await response.json());
 }
