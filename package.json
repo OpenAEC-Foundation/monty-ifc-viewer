@@ -1,7 +1,7 @@
 {
   "name": "montyviewer",
   "version": "0.1.0",
-  "description": "Web-based IFC viewer met bouwvolgorde visualisatie \u2014 3BM Engineering",
+  "description": "Web-based IFC viewer met bouwvolgorde visualisatie",
   "private": true,
   "type": "module",
   "scripts": {

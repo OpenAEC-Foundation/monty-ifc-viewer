@@ -1,6 +1,6 @@
 # MontyViewer
 
-Web-based IFC viewer met **bouwvolgorde visualisatie** voor 3BM Engineering.
+Web-based IFC viewer met **bouwvolgorde visualisatie**.
 Klanten krijgen een link, openen de viewer op tablet/telefoon, en zien hun model met bouwvolgorde + meettools.
 
 **Status:** MVP live — bouwvolgorde, context menu, multi-select, linked Mark, meettools, model toggle, day/night, **landing page met projectoverzicht per klant**
