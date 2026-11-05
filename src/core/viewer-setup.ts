@@ -12,7 +12,28 @@ import {
   type IViewer,
 } from "@speckle/viewer";
 
-const SPECKLE_SERVER = "https://speckle.open-aec.com";
+const DEFAULT_SPECKLE_SERVER = "https://speckle.open-aec.com";
+
+/**
+ * The Speckle server to load from. Default: the OpenAEC server. An environment can use its own server with
+ * `?server=https://speckle.example.com`, or by passing a full model link (`?url=https://speckle.example.com/projects/…`),
+ * whose origin is then used. Only https origins are accepted; anything else falls back to the default.
+ */
+export function speckleServerFrom(search: string): string {
+  const params = new URLSearchParams(search);
+  for (const value of [params.get("server"), params.get("url")]) {
+    if (!value) continue;
+    try {
+      const url = new URL(value);
+      if (url.protocol === "https:" && !url.username && !url.password) return url.origin;
+    } catch {
+      // not a URL: ignore
+    }
+  }
+  return DEFAULT_SPECKLE_SERVER;
+}
+
+const SPECKLE_SERVER = typeof window === "undefined" ? DEFAULT_SPECKLE_SERVER : speckleServerFrom(window.location.search);
 
 export interface ViewerInstance {
   viewer: IViewer;
