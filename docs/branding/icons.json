@@ -1,0 +1,16 @@
+[
+  {
+    "name": "Monty IFC Viewer",
+    "source": "docs/branding/monty-ifc-viewer.png",
+    "sha256": "7107f222e7bad66ec6bf6a38359f4d1f92287af81e1f1ddf0d9f5ac640d05366",
+    "source_url": "https://dashboard.snapcraft.io/site_media/appmedia/2026/11/monty-ifc-viewer-logo-afgerond.png",
+    "outputs": [
+      {
+        "path": "public/app-icon.png"
+      },
+      {
+        "path": "public/favicon.ico"
+      }
+    ]
+  }
+]
