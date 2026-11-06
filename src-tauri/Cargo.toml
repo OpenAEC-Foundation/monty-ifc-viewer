@@ -1,6 +1,6 @@
 [package]
 name = "monty-ifc-viewer"
-version = "1.0.0"
+version = "1.0.2"
 description = "Monty IFC Viewer"
 authors = ["Impertio"]
 edition = "2021"
