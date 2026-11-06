@@ -1,7 +1,7 @@
 {
   "$schema": "https://raw.githubusercontent.com/niccolosalvato/tauri-v2-schema/refs/heads/main/schemas/tauri.conf.json",
   "productName": "Monty IFC Viewer",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "identifier": "com.impertio.ifc-viewer",
   "build": {
     "beforeDevCommand": "npm run dev",
