@@ -83,6 +83,8 @@ export const translations = {
 
     // Toolbar
     'toolbar.openFile': 'Open IFC bestand',
+    'docs.choose': 'Kies een IFC-bestand uit Docs (nummer):',
+    'docs.none': 'Er staat nog geen IFC-bestand in deze map van Docs.',
 
     // DocumentBar
     'doc.close': 'Sluiten',
@@ -188,6 +190,8 @@ export const translations = {
 
     // Toolbar
     'toolbar.openFile': 'Open IFC file',
+    'docs.choose': 'Choose an IFC file from Docs (number):',
+    'docs.none': 'There is no IFC file in this Docs folder yet.',
 
     // DocumentBar
     'doc.close': 'Close',
