@@ -1,6 +1,6 @@
 import { Show, For } from 'solid-js';
 import { documents, activeDocumentId, switchDocument, closeDocument } from '@/state/document-store';
-import { loadFile } from '@/actions/load-file';
+import { chooseFile, loadFile } from '@/actions/load-file';
 import { t } from '@/state/locale-store';
 import styles from '@/styles/components/DocumentBar.module.css';
 
@@ -55,7 +55,7 @@ export default function DocumentBar() {
       </For>
       <button
         class={styles.newTabBtn}
-        onClick={() => fileInputRef?.click()}
+        onClick={() => chooseFile(() => fileInputRef?.click())}
         title={t('doc.openNew')}
       >
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none">

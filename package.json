@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite --port 3005",
     "build": "vite build",
+    "build:platform": "vite build --mode platform --base ./ --outDir dist-platform",
     "preview": "vite preview",
     "tauri": "tauri"
   },
@@ -13,7 +14,7 @@
     "@tauri-apps/api": "^2",
     "solid-js": "^1.9.5",
     "three": "0.128.0",
-    "web-ifc": "0.0.66"
+    "web-ifc": "0.0.79"
   },
   "devDependencies": {
     "@tauri-apps/cli": "^2.5.0",

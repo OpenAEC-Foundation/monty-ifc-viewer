@@ -1,5 +1,5 @@
 import { showDropZone, isDragOver } from '@/state/ui-store';
-import { loadFile } from '@/actions/load-file';
+import { chooseFile, loadFile } from '@/actions/load-file';
 import { t } from '@/state/locale-store';
 import styles from '@/styles/components/DropZone.module.css';
 
@@ -25,7 +25,7 @@ export default function DropZone() {
           <span class={styles.formatBadge}>.ifczip</span>
         </div>
         <p class={styles.dropZoneOr}>{t('drop.or')}</p>
-        <label class={styles.fileInputLabel} onClick={() => fileInputRef?.click()}>
+        <label class={styles.fileInputLabel} onClick={() => chooseFile(() => fileInputRef?.click())}>
           <span>{'\u{1F4C2}'}</span>
           {t('drop.chooseFile')}
         </label>

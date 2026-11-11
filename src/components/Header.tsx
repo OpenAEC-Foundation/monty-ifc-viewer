@@ -1,21 +1,23 @@
 import { Show, createSignal, onMount, onCleanup } from 'solid-js';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 import { t } from '@/state/locale-store';
-import { loadFile } from '@/actions/load-file';
+import { chooseFile, loadFile } from '@/actions/load-file';
 import ThemeSelector from '@/components/ThemeSelector';
 import LanguageSelector from '@/components/LanguageSelector';
 import styles from '@/styles/components/Header.module.css';
 
 export default function Header() {
   const [isMaximized, setIsMaximized] = createSignal(false);
-  const appWindow = getCurrentWindow();
+  // Not in the SuperCloud workplace (plain browser): no window controls there.
+  const appWindow = '__TAURI_INTERNALS__' in window ? getCurrentWindow() : null;
   let fileInputRef: HTMLInputElement | undefined;
 
   const updateMaximized = async () => {
-    setIsMaximized(await appWindow.isMaximized());
+    setIsMaximized(await appWindow!.isMaximized());
   };
 
   onMount(() => {
+    if (!appWindow) return;
     updateMaximized();
     const unlisten = appWindow.onResized(() => {
       updateMaximized();
@@ -35,10 +37,10 @@ export default function Header() {
 
   return (
     <header class={styles.header} data-tauri-drag-region>
-      <img src="/app-icon.png" alt="" class={styles.appIcon} />
+      <img src={`${import.meta.env.BASE_URL}app-icon.png`} alt="" class={styles.appIcon} />
       <button
         class={styles.openBtn}
-        onClick={() => fileInputRef?.click()}
+        onClick={() => chooseFile(() => fileInputRef?.click())}
         title={t('toolbar.openFile')}
       >
         <svg width="14" height="14" viewBox="0 0 18 18" fill="none">
@@ -57,17 +59,18 @@ export default function Header() {
         onChange={handleFileChange}
       />
 
-      <div class={styles.dragRegion} data-tauri-drag-region onDblClick={() => appWindow.toggleMaximize()}>
+      <div class={styles.dragRegion} data-tauri-drag-region onDblClick={() => appWindow?.toggleMaximize()}>
         <span class={styles.appTitle}>Monty <span>IFC</span> Viewer</span>
       </div>
 
       <LanguageSelector />
       <ThemeSelector />
 
+      <Show when={appWindow}>
       <div class={styles.windowControls}>
         <button
           class={styles.windowButton}
-          onClick={() => appWindow.minimize()}
+          onClick={() => appWindow?.minimize()}
           title={t('header.minimize')}
         >
           <svg width="10" height="1" viewBox="0 0 10 1">
@@ -76,7 +79,7 @@ export default function Header() {
         </button>
         <button
           class={styles.windowButton}
-          onClick={() => appWindow.toggleMaximize()}
+          onClick={() => appWindow?.toggleMaximize()}
           title={isMaximized() ? t('header.restore') : t('header.maximize')}
         >
           <Show
@@ -95,7 +98,7 @@ export default function Header() {
         </button>
         <button
           class={`${styles.windowButton} ${styles.windowButtonClose}`}
-          onClick={() => appWindow.close()}
+          onClick={() => appWindow?.close()}
           title={t('header.close')}
         >
           <svg width="10" height="10" viewBox="0 0 10 10">
@@ -104,6 +107,7 @@ export default function Header() {
           </svg>
         </button>
       </div>
+      </Show>
     </header>
   );
 }
