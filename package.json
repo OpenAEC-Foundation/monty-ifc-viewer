@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite --port 3005",
     "build": "vite build",
-    "build:platform": "vite build --mode platform --base ./ --outDir dist-platform",
+    "build:platform": "vite build --mode platform --base ./ --outDir dist-platform --sourcemap hidden",
     "preview": "vite preview",
     "tauri": "tauri"
   },
