@@ -1,5 +1,6 @@
 /**
- * Start in the SuperCloud workplace: language and theme of the host, the file the workplace was opened with, and the
+ * Start in the SuperCloud workplace: language and theme of the host, the file the workplace was opened with (or the
+ * projects of the Speckle server of the environment), and the
  * tools for the assistant. The viewer only reads, so no tool needs `bevestigen`.
  */
 import * as ifcStore from '@/state/ifc-store';
@@ -7,6 +8,8 @@ import { setTheme } from '@/state/theme-store';
 import { changeLocale, type Locale } from '@/state/locale-store';
 import { translations } from '@/i18n/translations';
 import { loadFromHost } from '@/actions/load-file';
+import { loadSpeckleProject } from '@/actions/load-speckle';
+import { setShowProjects } from '@/state/ui-store';
 import { selectParameter } from '@/actions/select-parameter';
 import { naturalSort } from '@/utils/value-sorter';
 import { getSiteHost, installWorkplaceApp, isIfc, type SiteHost, type WorkplaceTool } from './siteHost';
@@ -32,7 +35,29 @@ export function workplaceTools(host: SiteHost): WorkplaceTool[] {
   const requireModel = () => {
     if (!ifcStore.hasFile()) throw new Error(NO_MODEL);
   };
+  const speckle = host.speckle;
+  const projectTools: WorkplaceTool[] = !speckle ? [] : [
+    {
+      name: 'monty_list_projects',
+      description: 'De projecten op de Speckle-server van de omgeving (id, naam, omschrijving); query zoekt in de naam, cursor geeft de volgende bladzijde.',
+      inputSchema: { type: 'object', properties: { query: { type: 'string' }, cursor: { type: 'string' } }, additionalProperties: false },
+      run: async (args) => {
+        const page = await speckle.projects({ query: String(args.query ?? ''), cursor: args.cursor ? String(args.cursor) : undefined });
+        return { total: page.total, cursor: page.cursor, projects: page.projects.map(({ id, name, description }) => ({ id, name, description })) };
+      },
+    },
+    {
+      name: 'monty_open_project',
+      description: 'Open een project van de Speckle-server in de viewer (alleen lezen).',
+      inputSchema: { type: 'object', required: ['id'], properties: { id: { type: 'string' } }, additionalProperties: false },
+      run: async (args) => {
+        await loadSpeckleProject(host, String(args.id));
+        return { fileName: ifcStore.fileName(), elements: ifcStore.elements.length };
+      },
+    },
+  ];
   return [
+    ...projectTools,
     {
       name: 'monty_list_models',
       description: 'De IFC-bestanden in de Docs-map van de viewer (id en naam).',
@@ -102,5 +127,6 @@ export function startSupercloud(): boolean {
   window.addEventListener('openaec-host-preferences', () => applyPreferences(host));
   installWorkplaceApp(workplaceTools(host));
   if (host.initialFileId) void loadFromHost(host, host.initialFileId);
+  else if (host.speckle) setShowProjects(true);
   return true;
 }

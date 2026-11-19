@@ -2,10 +2,21 @@
  * The OpenAEC SuperCloud workplace (contract: OpenAEC-Blueprint, docs/supercloud-koppeling.md).
  *
  * In the workplace the page around the app sets `window.openaecHost` before the app starts: Open reads an IFC file
- * from Docs instead of the file system. The viewer never writes, so it does not use `save`. The assistant of the
+ * from Docs instead of the file system, and `openaecHost.speckle` lists and reads the projects of the Speckle server of
+ * the environment. The viewer never writes, so it does not use `save`. The assistant of the
  * SuperCloud reads and drives the viewer through `window.__OPDS_APP__`. Without a host (desktop) nothing here is active.
  */
 export type HostFileRef = { id: string; name: string; version: string | number };
+
+export type SpeckleModel = { id: string; name: string; version: string; object: string; message: string; created: string | null };
+export type SpeckleProject = { id: string; name: string; description: string; updated: string | null; models: SpeckleModel[] };
+
+/** The projects of the Speckle server of the environment, read only. Only there when the workplace offers it. */
+export type SpeckleHost = {
+  projects(options?: { query?: string; cursor?: string }): Promise<{ total: number; cursor: string | null; projects: SpeckleProject[] }>;
+  model(id: string): Promise<SpeckleProject & { objects: { id: string; [key: string]: any }[] }>;
+  preview(id: string, version: string): Promise<string | null>;
+};
 
 export type SiteHost = {
   taal?: string;
@@ -14,6 +25,7 @@ export type SiteHost = {
   open(id: string, version?: string | number): Promise<HostFileRef & { readOnly: boolean; bytes: ArrayBuffer | Uint8Array }>;
   save(bytes: Uint8Array, options: { id?: string; name?: string; expectedVersion?: string | number }): Promise<HostFileRef>;
   list(): Promise<{ id: string; name: string; modified: string }[]>;
+  speckle?: SpeckleHost;
 };
 
 export type WorkplaceTool = {

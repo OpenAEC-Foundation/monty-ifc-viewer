@@ -2,6 +2,8 @@ import { Show, createSignal, onMount, onCleanup } from 'solid-js';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 import { t } from '@/state/locale-store';
 import { chooseFile, loadFile } from '@/actions/load-file';
+import { getSiteHost } from '@/supercloud/siteHost';
+import { showProjects, setShowProjects } from '@/state/ui-store';
 import ThemeSelector from '@/components/ThemeSelector';
 import LanguageSelector from '@/components/LanguageSelector';
 import styles from '@/styles/components/Header.module.css';
@@ -58,6 +60,14 @@ export default function Header() {
         style={{ display: 'none' }}
         onChange={handleFileChange}
       />
+
+      <Show when={getSiteHost()?.speckle}>
+        <button class={styles.openBtn} onClick={() => setShowProjects(!showProjects())} title={t('projects.open')}>
+          <svg width="14" height="14" viewBox="0 0 18 18" fill="none">
+            <path d="M2.5 2.5h5v5h-5zM10.5 2.5h5v5h-5zM2.5 10.5h5v5h-5zM10.5 10.5h5v5h-5z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" />
+          </svg>
+        </button>
+      </Show>
 
       <div class={styles.dragRegion} data-tauri-drag-region onDblClick={() => appWindow?.toggleMaximize()}>
         <span class={styles.appTitle}>Monty <span>IFC</span> Viewer</span>
