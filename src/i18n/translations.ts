@@ -83,6 +83,18 @@ export const translations = {
 
     // Toolbar
     'toolbar.openFile': 'Open IFC bestand',
+    'docs.choose': 'Kies een IFC-bestand uit Docs (nummer):',
+    'docs.none': 'Er staat nog geen IFC-bestand in deze map van Docs.',
+    'projects.title': 'Projecten',
+    'projects.open': 'Projecten uit Speckle',
+    'projects.search': 'Zoek op projectnummer of naam',
+    'projects.openFile': 'IFC-bestand openen',
+    'projects.close': 'Sluiten',
+    'projects.more': 'Meer laden',
+    'projects.loading': 'Projecten laden...',
+    'projects.none': 'Geen projecten gevonden.',
+    'projects.failed': 'De projecten konden niet geladen worden.',
+    'projects.empty': 'Dit project heeft geen model om te tonen.',
 
     // DocumentBar
     'doc.close': 'Sluiten',
@@ -90,6 +102,7 @@ export const translations = {
 
     // Loading / Status
     'loading.file': 'IFC bestand laden...',
+    'loading.project': 'Project ophalen...',
     'loading.parse': 'IFC structuur parsen...',
     'loading.geometry': 'Geometrie genereren...',
     'loading.properties': 'Properties ophalen...',
@@ -188,6 +201,18 @@ export const translations = {
 
     // Toolbar
     'toolbar.openFile': 'Open IFC file',
+    'docs.choose': 'Choose an IFC file from Docs (number):',
+    'docs.none': 'There is no IFC file in this Docs folder yet.',
+    'projects.title': 'Projects',
+    'projects.open': 'Projects from Speckle',
+    'projects.search': 'Search by project number or name',
+    'projects.openFile': 'Open IFC file',
+    'projects.close': 'Close',
+    'projects.more': 'Load more',
+    'projects.loading': 'Loading projects...',
+    'projects.none': 'No projects found.',
+    'projects.failed': 'The projects could not be loaded.',
+    'projects.empty': 'This project has no model to show.',
 
     // DocumentBar
     'doc.close': 'Close',
@@ -195,6 +220,7 @@ export const translations = {
 
     // Loading / Status
     'loading.file': 'Loading IFC file...',
+    'loading.project': 'Fetching project...',
     'loading.parse': 'Parsing IFC structure...',
     'loading.geometry': 'Generating geometry...',
     'loading.properties': 'Retrieving properties...',

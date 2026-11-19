@@ -21,7 +21,7 @@ export default function PlayerDisplay() {
   return (
     <div class={styles.playerDisplay}>
       <div class={styles.playerLabel}>{currentParamLabel() || t('ifc.currentValue')}</div>
-      <div class={styles.playerValue}>{currentValue()}</div>
+      <div class={`${styles.playerValue} ${currentValue().length > 12 ? styles.playerValueLong : ''}`}>{currentValue()}</div>
       <div class={styles.playerSubtitle}>{subtitle()}</div>
     </div>
   );

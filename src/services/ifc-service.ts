@@ -5,7 +5,8 @@ let ifcApi: any = null;
 
 export async function initIFC(): Promise<void> {
   ifcApi = new WebIFC.IfcAPI();
-  ifcApi.SetWasmPath('/');
+  // Next to index.html (public/), also with a relative base in the SuperCloud workplace.
+  ifcApi.SetWasmPath(new URL('./', document.baseURI).href, true);
   await ifcApi.Init();
   console.log('web-ifc initialized');
 }

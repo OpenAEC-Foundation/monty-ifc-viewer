@@ -1,4 +1,4 @@
-import { loadFile } from '@/actions/load-file';
+import { chooseFile, loadFile } from '@/actions/load-file';
 import { t } from '@/state/locale-store';
 import styles from '@/styles/components/Toolbar.module.css';
 
@@ -17,7 +17,7 @@ export default function Toolbar() {
     <div class={styles.toolbar}>
       <button
         class={styles.toolbarBtn}
-        onClick={() => fileInputRef?.click()}
+        onClick={() => chooseFile(() => fileInputRef?.click())}
         title={t('toolbar.openFile')}
       >
         <svg width="18" height="18" viewBox="0 0 18 18" fill="none">

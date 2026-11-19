@@ -7,6 +7,8 @@ export const [statusType, setStatusType] = createSignal<'success' | 'loading' | 
 export const [showStatusBar, setShowStatusBar] = createSignal(true);
 export const [showViewerControls, setShowViewerControls] = createSignal(false);
 export const [showDropZone, setShowDropZone] = createSignal(true);
+// The project list of the Speckle server of the environment (SuperCloud workplace), over the viewer.
+export const [showProjects, setShowProjects] = createSignal(false);
 export const [isDragOver, setIsDragOver] = createSignal(false);
 export const [propertyPanelOpen, setPropertyPanelOpen] = createSignal(false);
 export const [propertyPanelData, setPropertyPanelData] = createSignal<Record<string, any> | null>(null);

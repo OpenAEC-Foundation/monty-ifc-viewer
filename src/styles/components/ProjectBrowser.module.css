@@ -1,0 +1,155 @@
+.browser {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    background: var(--bg-dark);
+    z-index: 21;
+    overflow-y: auto;
+    padding: 0 20px 24px;
+}
+
+.bar {
+    position: sticky;
+    top: 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 0 12px;
+    background: var(--bg-dark);
+    z-index: 1;
+}
+
+.title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.search {
+    flex: 1;
+    min-width: 120px;
+    max-width: 420px;
+    height: 34px;
+    padding: 0 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--bg-input);
+    color: var(--text-primary);
+    font: inherit;
+}
+
+.search:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+
+.count {
+    flex: 1;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    white-space: nowrap;
+}
+
+.barBtn,
+.more {
+    height: 34px;
+    padding: 0 14px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--bg-card);
+    color: var(--text-primary);
+    font: inherit;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.barBtn:hover,
+.more:hover {
+    background: var(--bg-card-hover);
+}
+
+.more {
+    align-self: center;
+    margin-top: 16px;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 14px;
+}
+
+.card {
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: var(--bg-card);
+    color: var(--text-primary);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    overflow: hidden;
+    transition: border-color 0.15s, transform 0.15s;
+}
+
+.card:hover:not(:disabled) {
+    border-color: var(--primary);
+    transform: translateY(-1px);
+}
+
+.card:disabled {
+    opacity: 0.5;
+    cursor: default;
+}
+
+.picture {
+    aspect-ratio: 16 / 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-card-hover);
+}
+
+.picture img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.placeholder {
+    font-size: 2rem;
+    opacity: 0.4;
+}
+
+.cardText {
+    padding: 10px 12px 12px;
+    min-width: 0;
+}
+
+.cardName {
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.cardDescription {
+    margin-top: 4px;
+    color: var(--text-secondary);
+    font-size: 0.78rem;
+    line-height: 1.35;
+    white-space: pre-line;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.message {
+    margin: 24px 0;
+    text-align: center;
+    color: var(--text-secondary);
+}
