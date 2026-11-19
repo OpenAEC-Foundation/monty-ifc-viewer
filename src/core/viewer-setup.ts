@@ -11,6 +11,14 @@ import {
   ExplodeExtension,
   type IViewer,
 } from "@speckle/viewer";
+import { configureTextBuilder } from "troika-three-text";
+import labelFont from "@fontsource/inter/files/inter-latin-400-normal.woff?url";
+
+// The labels of the measurements: a font from the bundle. (The text library otherwise fetches one from Google Fonts,
+// which a sandboxed frame in the SuperCloud workplace may not do and a visitor did not ask for.)
+if (typeof window !== "undefined") {
+  configureTextBuilder({ defaultFontURL: new URL(labelFont, window.location.href).href });
+}
 
 const DEFAULT_SPECKLE_SERVER = "https://speckle.open-aec.com";
 

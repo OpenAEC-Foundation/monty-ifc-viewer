@@ -46,7 +46,7 @@ export function createTimelineUI(manager: PhaseManager): HTMLElement {
 
   function updateLabel(): void {
     const phase = manager.currentPhase;
-    label.textContent = `Mark ${manager.currentPhaseName}`;
+    label.textContent = manager.currentPhaseLabel;
     slider.value = String(phase);
   }
 

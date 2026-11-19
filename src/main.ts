@@ -1,5 +1,8 @@
 import { initViewer, type ViewerInstance } from "./core/viewer-setup";
-import { parseStreamParams, loadStream, type StreamParams } from "./core/stream-loader";
+import { parseStreamParams, loadStream, loadObjects, type StreamParams, type LoadedModel } from "./core/stream-loader";
+import { getHost, readIntent, restartWith, installWorkplaceTools, type SiteHost, type WorkplaceTool } from "./core/host";
+import { createProjectBrowser } from "./ui/project-browser";
+import type { IViewer } from "@speckle/viewer";
 import { parseRoute, landingPath } from "./core/route";
 import { createToolbar } from "./ui/toolbar";
 import { createPropertyPanel, setPropertyPanelMapping } from "./ui/property-panel";
@@ -13,18 +16,16 @@ import { parseMarks, PhaseManager, createTimelineUI } from "./addons/bouwvolgord
 import { setFilterStateMapping } from "./core/filter-state";
 import "./style.css";
 
+type Load = (viewer: IViewer, onProgress: (progress: number) => void) => Promise<LoadedModel[]>;
+
 async function main(): Promise<void> {
+  const host = getHost();
+  if (host) return startWorkplace(host);
+
   const legacyClient = new URLSearchParams(window.location.search).get("client");
   if (legacyClient) {
     window.location.href = landingPath(legacyClient);
     return;
-  }
-
-  const container = document.getElementById("viewer-container");
-  const loadingIndicator = document.getElementById("loading-indicator");
-
-  if (!container) {
-    throw new Error("Viewer container element not found");
   }
 
   // Resolve project: prefer path-based route (/{client}/pr{n}); fall back to legacy ?project=/?url=
@@ -61,6 +62,28 @@ async function main(): Promise<void> {
     }
   }
 
+  const params = streamParams;
+  const target = backTarget;
+  await startViewer(
+    (viewer, onProgress) => loadStream(viewer, params, onProgress),
+    params.projectId,
+    target
+      ? () => {
+          const ref = document.referrer;
+          const sameOrigin = ref && new URL(ref).origin === location.origin;
+          if (sameOrigin && history.length > 1) history.back();
+          else location.href = target;
+        }
+      : null
+  );
+}
+
+/** Start the viewer with its tools and load the models that `load` brings. */
+async function startViewer(load: Load, projectId: string, back: (() => void) | null): Promise<void> {
+  const container = document.getElementById("viewer-container");
+  const loadingIndicator = document.getElementById("loading-indicator");
+  if (!container) throw new Error("Viewer container element not found");
+
   // Initialize Speckle viewer
   let instance: ViewerInstance;
   try {
@@ -73,20 +96,12 @@ async function main(): Promise<void> {
 
   // Back button to project overview (if we know where to go back to)
   const overlay = document.getElementById("overlay");
-  if (backTarget && overlay) {
+  if (back && overlay) {
     const backBtn = document.createElement("button");
     backBtn.id = "back-to-projects";
     backBtn.title = "Terug naar projecten";
     backBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><polyline points="15 18 9 12 15 6"/></svg>`;
-    backBtn.addEventListener("click", () => {
-      const ref = document.referrer;
-      const sameOrigin = ref && new URL(ref).origin === location.origin;
-      if (sameOrigin && history.length > 1) {
-        history.back();
-      } else {
-        location.href = backTarget!;
-      }
-    });
+    backBtn.addEventListener("click", back);
     overlay.appendChild(backBtn);
   }
 
@@ -100,7 +115,7 @@ async function main(): Promise<void> {
 
   // Load model(s)
   try {
-    const models = await loadStream(instance.viewer, streamParams, (progress) => {
+    const models = await load(instance.viewer, (progress) => {
       if (loadingIndicator) {
         const pct = Math.round(progress * 100);
         loadingIndicator.textContent = `Model laden... ${pct}%`;
@@ -242,10 +257,100 @@ async function main(): Promise<void> {
     console.log("Model loaded successfully");
 
     // Initialize bouwvolgorde player + filter panel
-    initBouwvolgorde(instance, streamParams.projectId, overlay, leftToolbar);
+    initBouwvolgorde(instance, projectId, overlay, leftToolbar);
   } catch (error) {
     console.error("Model load failed:", error);
-    showMessage("Model kon niet worden geladen. Controleer de stream URL.");
+    showMessage(getHost() ? "Model kon niet worden geladen." : "Model kon niet worden geladen. Controleer de stream URL.");
+  }
+}
+
+
+
+/**
+ * The SuperCloud workplace: the projects of the Speckle server of the environment, or the IFC file from Docs the
+ * workplace was opened with. Another model starts the viewer afresh (see `restartWith`).
+ */
+async function startWorkplace(host: SiteHost): Promise<void> {
+  const intent = readIntent();
+  const speckle = host.speckle;
+  const fileId = intent ? intent.file : host.initialFileId;
+  const toProjects = speckle ? () => restartWith({ overview: true }) : null;
+
+  const tools: WorkplaceTool[] = [];
+  if (speckle) {
+    tools.push(
+      {
+        name: "monty_list_projects",
+        description: "De projecten op de Speckle-server van de omgeving (id, naam, omschrijving); query zoekt in de naam, cursor geeft de volgende bladzijde.",
+        inputSchema: { type: "object", properties: { query: { type: "string" }, cursor: { type: "string" } }, additionalProperties: false },
+        run: async (args) => {
+          const page = await speckle.projects({ query: String(args.query ?? ""), cursor: args.cursor ? String(args.cursor) : undefined });
+          return { total: page.total, cursor: page.cursor, projects: page.projects.map(({ id, name, description }) => ({ id, name, description })) };
+        },
+      },
+      {
+        name: "monty_open_project",
+        description: "Open een project van de Speckle-server in de viewer (alleen lezen). De viewer start opnieuw met dat project.",
+        inputSchema: { type: "object", required: ["id"], properties: { id: { type: "string" } }, additionalProperties: false },
+        run: (args) => {
+          window.setTimeout(() => restartWith({ project: String(args.id) }), 0);
+          return { opening: String(args.id) };
+        },
+      }
+    );
+  }
+  tools.push({
+    name: "monty_list_models",
+    description: "De IFC-bestanden in de Docs-map van de viewer (id en naam).",
+    inputSchema: { type: "object", properties: {}, additionalProperties: false },
+    run: async () => (await host.list()).filter((file) => /\.(ifc|ifczip)$/i.test(file.name)),
+  });
+  tools.push({
+    name: "monty_open_model",
+    description: "Open een IFC-bestand uit Docs in de viewer (alleen lezen; het bestand verandert niet). De viewer start opnieuw met dat bestand.",
+    inputSchema: { type: "object", required: ["id"], properties: { id: { type: "string" } }, additionalProperties: false },
+    run: (args) => {
+      window.setTimeout(() => restartWith({ file: String(args.id) }), 0);
+      return { opening: String(args.id) };
+    },
+  });
+  installWorkplaceTools(tools);
+
+  if (intent?.project && speckle) {
+    const id = intent.project;
+    await startViewer(
+      async (viewer, onProgress) => {
+        const project = await speckle.model(id);
+        document.title = project.name;
+        return loadObjects(viewer, project.models.map((model) => ({ name: model.name, objectId: model.object })), project.objects, onProgress);
+      },
+      id,
+      toProjects
+    );
+    return;
+  }
+
+  if (fileId) {
+    await startViewer(
+      async (viewer, onProgress) => {
+        const file = await host.open(fileId);
+        document.title = file.name;
+        const { ifcToObjects } = await import("./core/ifc-convert");
+        const bytes = file.bytes instanceof Uint8Array ? file.bytes : new Uint8Array(file.bytes);
+        const { rootId, objects } = await ifcToObjects(bytes, file.name);
+        return loadObjects(viewer, [{ name: file.name, objectId: rootId }], objects, onProgress);
+      },
+      "",
+      toProjects
+    );
+    return;
+  }
+
+  document.getElementById("loading-indicator")?.remove();
+  if (speckle) {
+    document.body.appendChild(createProjectBrowser(speckle, (id) => restartWith({ project: id })));
+  } else {
+    showMessage("Open een IFC-bestand uit Docs om het hier te bekijken.");
   }
 }
 

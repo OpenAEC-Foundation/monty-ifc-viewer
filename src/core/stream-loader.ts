@@ -1,5 +1,8 @@
-import { SpeckleLoader, LoaderEvent, type IViewer } from "@speckle/viewer";
+import { SpeckleLoader, LoaderEvent, type IViewer, type WorldTree } from "@speckle/viewer";
+import { ObjectLoader2Factory } from "@speckle/objectloader2";
 import { SPECKLE_SERVER } from "./viewer-setup";
+import { rememberObjects } from "./objects";
+import type { SpeckleObject } from "./host";
 
 export interface StreamParams {
   projectId: string;
@@ -226,4 +229,49 @@ export async function loadStream(
 
 function buildUrl(projectId: string, objectId: string): string {
   return `${SPECKLE_SERVER}/streams/${projectId}/objects/${objectId}`;
+}
+
+/**
+ * A loader over objects that are already here, the root first. (SpeckleOfflineLoader of this viewer version starts
+ * from an empty list and so loads nothing.)
+ */
+class MemoryLoader extends SpeckleLoader {
+  constructor(tree: WorldTree, objects: SpeckleObject[]) {
+    super(tree, `/json/${objects[0].id}`, undefined, undefined, objects);
+  }
+
+  protected initObjectLoader(_resource: string, _authToken?: string, _enableCaching?: boolean, resourceData?: unknown) {
+    return ObjectLoader2Factory.createFromObjects(resourceData as never) as never;
+  }
+}
+
+/**
+ * Load models whose objects are already here (the SuperCloud workplace reads them through the host; an IFC file is
+ * converted in the browser). `roots` are the root objects of the models, `objects` everything below them.
+ */
+export async function loadObjects(
+  viewer: IViewer,
+  roots: { name: string; objectId: string }[],
+  objects: SpeckleObject[],
+  onProgress?: (progress: number) => void
+): Promise<LoadedModel[]> {
+  rememberObjects(objects);
+  const byId = new Map(objects.map((object) => [object.id, object]));
+  const models: LoadedModel[] = [];
+  let loaded = 0;
+  for (const root of roots) {
+    const top = byId.get(root.objectId);
+    if (!top) continue;
+    const below = Object.keys((top.__closure as Record<string, number> | undefined) ?? {});
+    const own = [top, ...below.map((id) => byId.get(id)).filter((object): object is SpeckleObject => Boolean(object))];
+    const loader = new MemoryLoader(viewer.getWorldTree(), own);
+    loader.on(LoaderEvent.LoadProgress, (args: { progress: number }) => {
+      onProgress?.((loaded + args.progress) / roots.length);
+    });
+    await viewer.loadObject(loader, true);
+    models.push({ name: root.name, objectId: root.objectId, url: loader.resource });
+    loaded++;
+  }
+  if (models.length === 0) throw new Error("Geen modellen gevonden in dit project");
+  return models;
 }

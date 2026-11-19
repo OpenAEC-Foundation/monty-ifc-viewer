@@ -34,8 +34,19 @@ const cleanUrlRoutes: Plugin = {
   },
 };
 
-export default defineConfig({
-  plugins: [cleanUrlRoutes],
+// SuperCloud workplace (`--mode platform`): only the viewer, in a sandboxed frame whose CSP allows no other origins.
+// The statistics script goes, and the icons are found next to index.html.
+const platformHtml: Plugin = {
+  name: "monty-platform-html",
+  apply: "build",
+  transformIndexHtml: (html) =>
+    html
+      .replace(/\s*<script id="openaec-analytics-loader"[^>]*><\/script>/, "")
+      .replace(/href="\/(favicon\.ico|app-icon\.png)"/g, 'href="./$1"'),
+};
+
+export default defineConfig(({ mode }) => ({
+  plugins: mode === "platform" ? [platformHtml] : [cleanUrlRoutes],
   appType: "mpa",
   server: {
     port: 3052,
@@ -45,10 +56,13 @@ export default defineConfig({
   build: {
     chunkSizeWarningLimit: 2000,
     rollupOptions: {
-      input: {
-        main: resolve(__dirname, "index.html"),
-        landing: resolve(__dirname, "landing/index.html"),
-      },
+      input:
+        mode === "platform"
+          ? { main: resolve(__dirname, "index.html") }
+          : {
+              main: resolve(__dirname, "index.html"),
+              landing: resolve(__dirname, "landing/index.html"),
+            },
     },
   },
-});
+}));

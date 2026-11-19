@@ -7,13 +7,17 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
+    "build:platform": "tsc && vite build --mode platform --base ./ --outDir dist-platform --sourcemap hidden",
     "preview": "vite preview",
     "test": "node --test tests/*.test.mjs",
     "test:browser": "node tests/construction-sequence.browser.mjs",
     "test:deployment": "node --test tests/deployment.http.mjs"
   },
   "dependencies": {
-    "@speckle/viewer": "2.25.4"
+    "@fontsource/inter": "5.3.0",
+    "@speckle/viewer": "2.25.4",
+    "troika-three-text": "0.47.2",
+    "web-ifc": "0.0.79"
   },
   "overrides": {
     "@speckle/objectloader2": "2.25.4",

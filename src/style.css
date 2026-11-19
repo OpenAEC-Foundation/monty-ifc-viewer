@@ -1087,3 +1087,152 @@ html.dark-theme #property-panel::-webkit-scrollbar-thumb {
   border-color: var(--accent-teal);
 }
 
+
+/* ============================================
+   Project overview (SuperCloud workplace)
+   ============================================ */
+
+#project-browser {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  overflow-y: auto;
+  padding: 0 24px 32px;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.pb-bar {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 0 14px;
+  background: var(--bg-primary);
+}
+
+.pb-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.pb-search {
+  flex: 1;
+  max-width: 440px;
+  height: 38px;
+  padding: 0 14px;
+  border-radius: 8px;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-toolbar);
+  color: var(--text-primary);
+  font: inherit;
+}
+
+.pb-search:focus {
+  outline: none;
+  border-color: var(--accent-teal);
+}
+
+.pb-count {
+  color: var(--text-secondary);
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.pb-message {
+  margin: 0;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+.pb-message:not(:empty) {
+  margin: 20px 0;
+}
+
+.pb-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 16px;
+}
+
+.pb-card {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  overflow: hidden;
+  border-radius: 12px;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-toolbar);
+  color: var(--text-primary);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s, transform 0.15s, box-shadow 0.15s;
+}
+
+.pb-card:hover:not(:disabled) {
+  border-color: var(--accent-teal);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+}
+
+.pb-card:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.pb-picture {
+  aspect-ratio: 16 / 10;
+  background: var(--bg-secondary);
+}
+
+.pb-picture img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.pb-text {
+  min-width: 0;
+  padding: 12px 14px 14px;
+}
+
+.pb-name {
+  overflow: hidden;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pb-description {
+  display: -webkit-box;
+  margin-top: 4px;
+  overflow: hidden;
+  color: var(--text-secondary);
+  font-size: 12.5px;
+  line-height: 1.4;
+  white-space: pre-line;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+
+.pb-more {
+  display: block;
+  height: 38px;
+  margin: 20px auto 0;
+  padding: 0 18px;
+  border-radius: 8px;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-toolbar);
+  color: var(--text-primary);
+  font: inherit;
+  cursor: pointer;
+}
+
+.pb-more:hover {
+  border-color: var(--accent-teal);
+}

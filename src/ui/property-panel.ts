@@ -1,6 +1,6 @@
 import { ViewerEvent, type SelectionEvent } from "@speckle/viewer";
 import type { ViewerInstance } from "../core/viewer-setup";
-import { SPECKLE_SERVER } from "../core/viewer-setup";
+import { fetchObject } from "../core/objects";
 import type { PhaseMapping } from "../addons/bouwvolgorde/mark-parser";
 import { selectedIds, isolateSelected, hideSelected, resetFilters, hasActiveFilters, findFirstInteractableHit } from "./context-menu";
 
@@ -178,7 +178,8 @@ function showSingleSelectPanel(
   if (_phaseMapping) {
     const mark = _phaseMapping.nodeIdToMark.get(raw.id as string);
     if (mark) {
-      elHeader.innerHTML += `<span class="pp-element-mark">Mark ${esc(mark)}</span>`;
+      const label = _phaseMapping.phaseLabels.get(mark) ?? `Mark ${mark}`;
+      elHeader.innerHTML += `<span class="pp-element-mark">${esc(label)}</span>`;
     }
   }
   body.appendChild(elHeader);
@@ -327,16 +328,16 @@ async function fetchParameterGroups(
   projectId: string,
   objectId: string
 ): Promise<PropertyGroup[]> {
-  if (!projectId || !objectId) return [];
+  if (!objectId) return [];
 
   try {
-    const url = `${SPECKLE_SERVER}/objects/${projectId}/${objectId}/single`;
-    const resp = await fetch(url);
-    if (!resp.ok) return [];
-
-    const obj = await resp.json() as Record<string, unknown>;
-    const params = (obj.properties as Record<string, unknown>)?.Parameters as Record<string, unknown> | undefined;
-    if (!params) return [];
+    const obj = await fetchObject(projectId, objectId);
+    if (!obj) return [];
+    const properties = obj.properties as Record<string, unknown> | undefined;
+    const params = properties?.Parameters as Record<string, unknown> | undefined;
+    // A Revit export keeps its parameters under Instance Parameters; other models (IFC, an assembly model) keep
+    // plain groups of properties, IFC under Property Sets.
+    if (!params) return plainGroups((properties?.["Property Sets"] as Record<string, unknown> | undefined) ?? properties);
 
     const instanceParams = params["Instance Parameters"] as Record<string, unknown> | undefined;
     if (!instanceParams) return [];
@@ -365,6 +366,31 @@ async function fetchParameterGroups(
   } catch {
     return [];
   }
+}
+
+/** Groups of plain properties: `{Group: {Key: value}}`; values outside a group come first. */
+function plainGroups(properties: Record<string, unknown> | undefined): PropertyGroup[] {
+  if (!properties) return [];
+  const loose: PropertyGroup = { name: "Eigenschappen", props: [] };
+  const groups: PropertyGroup[] = [];
+  const text = (value: unknown): string | null => {
+    const inner = value && typeof value === "object" && "value" in value ? (value as { value: unknown }).value : value;
+    return inner === null || inner === undefined || inner === "" || typeof inner === "object" ? null : formatValue(inner);
+  };
+  for (const [key, value] of Object.entries(properties)) {
+    if (value && typeof value === "object" && !Array.isArray(value) && !("value" in value)) {
+      const props: PropertyGroup["props"] = [];
+      for (const [name, inner] of Object.entries(value as Record<string, unknown>)) {
+        const shown = text(inner);
+        if (shown !== null) props.push({ key: name, value: shown });
+      }
+      if (props.length > 0) groups.push({ name: key, props });
+    } else {
+      const shown = text(value);
+      if (shown !== null) loose.props.push({ key, value: shown });
+    }
+  }
+  return loose.props.length > 0 ? [loose, ...groups] : groups;
 }
 
 function extractParamGroup(

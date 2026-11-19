@@ -1,10 +1,12 @@
 import type { IViewer } from "@speckle/viewer";
-import { SPECKLE_SERVER } from "../../core/viewer-setup";
-import { isIfcElement, isSequenceElement, readSequenceProperties, type SequenceObject, type SequenceProperties } from "./mark-properties";
+import { fetchObject } from "../../core/objects";
+import { hasOwnSequence, isSequenceElement, readSequenceProperties, type SequenceObject, type SequenceProperties } from "./mark-properties";
 
 export interface PhaseMapping {
   /** Sorted unique mark values (phases) */
   phases: string[];
+  /** The name of a phase when the model gives one (an assembly step); otherwise the phase is shown as Mark. */
+  phaseLabels: Map<string, string>;
   /** Map from mark value to array of WorldTree node IDs */
   markToIds: Map<string, string[]>;
   /** All element node IDs that have a Mark */
@@ -61,6 +63,7 @@ export async function parseMarks(
   const nodeIdToMark = new Map<string, string>();
   const typeToIds = new Map<string, string[]>();
   const nodeIdToType = new Map<string, string>();
+  const phaseLabels = new Map<string, string>();
   const allMarkedIds: string[] = [];
   const unmarkedIds: string[] = [];
   const cltTagIds: string[] = [];
@@ -72,13 +75,14 @@ export async function parseMarks(
   for (let i = 0; i < elements.length; i += BATCH_SIZE) {
     const batch = elements.slice(i, i + BATCH_SIZE);
     const results = await Promise.all(
-      batch.map((el) => isIfcElement(el.object)
+      batch.map((el) => hasOwnSequence(el.object)
         ? readSequenceProperties(el.object)
         : fetchMarkAndType(projectId, el.nodeId))
     );
 
     for (let j = 0; j < batch.length; j++) {
-      const { mark, originalType, fromCltTag } = results[j];
+      const { mark, originalType, fromCltTag, label } = results[j];
+      if (mark !== null && label) phaseLabels.set(mark, label);
       const nodeId = batch[j].nodeId;
 
       if (mark !== null) {
@@ -151,17 +155,12 @@ export async function parseMarks(
     `${cltTagIds.length} CLT tags`
   );
 
-  return { phases, markToIds, allMarkedIds, unmarkedIds, nodeIdToMark, typeToIds, nodeIdToType, collectieToIds, cltTagIds };
+  return { phases, phaseLabels, markToIds, allMarkedIds, unmarkedIds, nodeIdToMark, typeToIds, nodeIdToType, collectieToIds, cltTagIds };
 }
 
 async function fetchMarkAndType(
   projectId: string,
   objectId: string
 ): Promise<SequenceProperties> {
-  const url = `${SPECKLE_SERVER}/objects/${projectId}/${objectId}/single`;
-  const response = await fetch(url);
-  if (!response.ok) {
-    throw new Error(`Sequence metadata request failed (${response.status}) for object ${objectId}`);
-  }
-  return readSequenceProperties(await response.json());
+  return readSequenceProperties((await fetchObject(projectId, objectId)) ?? {});
 }

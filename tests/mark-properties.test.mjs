@@ -68,3 +68,17 @@ test('elements without optional sequence metadata remain unmarked', () => {
     mark: null, originalType: null, fromCltTag: false,
   });
 });
+
+test("an assembly model runs on its steps and names them", () => {
+  const element = {
+    speckle_type: "Objects.Data.DataObject",
+    properties: { Montage: { Stap: 3, Stapnaam: "Palen + Stijlen", Soort: "stijl" } },
+  };
+  assert.equal(isSequenceElement(element), true);
+  assert.deepEqual(readSequenceProperties(element), {
+    mark: "3",
+    originalType: "stijl",
+    fromCltTag: false,
+    label: "Stap 3 · Palen + Stijlen",
+  });
+});

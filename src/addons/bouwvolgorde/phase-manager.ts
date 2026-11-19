@@ -25,6 +25,12 @@ export class PhaseManager {
     return this._currentPhase;
   }
 
+  /** The phase as the timeline shows it: the name from the model, otherwise the mark. */
+  get currentPhaseLabel(): string {
+    const name = this.currentPhaseName;
+    return this.mapping.phaseLabels.get(name) ?? `Mark ${name}`;
+  }
+
   get currentPhaseName(): string {
     if (this._currentPhase < 0 || this._currentPhase >= this.mapping.phases.length) {
       return "";
