@@ -1,6 +1,9 @@
 import type { HostProject, SpeckleHost } from "../core/host";
 
 const PREVIEWS_AT_ONCE = 3;
+/** The preview service of Speckle makes one picture at a time: ask again for a card in view that has none yet. */
+const RETRY_MS = 45_000;
+const MAX_TRIES = 40;
 
 /**
  * The projects of the Speckle server of the environment (SuperCloud workplace): search, a picture per project, a click
@@ -31,11 +34,12 @@ export function createProjectBrowser(speckle: SpeckleHost, open: (projectId: str
   let timer: number | undefined;
 
   // Pictures only for the cards in view, a few at a time: the preview service renders them on request.
-  const waiting: Array<{ project: HostProject; picture: HTMLElement }> = [];
+  const waiting: Array<{ project: HostProject; picture: HTMLElement; tries: number }> = [];
   let running = 0;
   const nextPreview = (): void => {
     while (running < PREVIEWS_AT_ONCE && waiting.length) {
-      const { project, picture } = waiting.shift()!;
+      const item = waiting.shift()!;
+      const { project, picture } = item;
       const version = project.models[0]?.version;
       if (!version || !picture.isConnected) continue;
       running++;
@@ -48,6 +52,14 @@ export function createProjectBrowser(speckle: SpeckleHost, open: (projectId: str
             img.alt = "";
             img.src = data;
             picture.replaceChildren(img);
+            picture.classList.remove("pb-pending");
+          } else if (picture.isConnected && item.tries + 1 < MAX_TRIES) {
+            // Not made yet: the card shows that it is coming, and asks again later.
+            picture.classList.add("pb-pending");
+            window.setTimeout(() => {
+              waiting.push({ ...item, tries: item.tries + 1 });
+              nextPreview();
+            }, RETRY_MS);
           }
           running--;
           nextPreview();
@@ -59,7 +71,7 @@ export function createProjectBrowser(speckle: SpeckleHost, open: (projectId: str
       if (!entry.isIntersecting) continue;
       observer.unobserve(entry.target);
       const project = cards.get(entry.target);
-      if (project) waiting.push({ project, picture: entry.target.querySelector<HTMLElement>(".pb-picture")! });
+      if (project) waiting.push({ project, picture: entry.target.querySelector<HTMLElement>(".pb-picture")!, tries: 0 });
     }
     nextPreview();
   });

@@ -1189,6 +1189,22 @@ html.dark-theme #property-panel::-webkit-scrollbar-thumb {
   background: var(--bg-secondary);
 }
 
+/* The preview service is still making the picture. */
+.pb-picture.pb-pending {
+  background: linear-gradient(100deg, var(--bg-secondary) 40%, var(--bg-primary) 50%, var(--bg-secondary) 60%);
+  background-size: 200% 100%;
+  animation: pb-pending 1.6s linear infinite;
+}
+
+@keyframes pb-pending {
+  from { background-position: 100% 0; }
+  to { background-position: -100% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pb-picture.pb-pending { animation: none; }
+}
+
 .pb-picture img {
   display: block;
   width: 100%;
