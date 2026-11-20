@@ -14,6 +14,8 @@ export type SpeckleHost = {
   projects(options?: { query?: string; cursor?: string }): Promise<{ total: number; cursor: string | null; projects: HostProject[] }>;
   model(id: string): Promise<HostProject & { objects: SpeckleObject[] }>;
   preview(id: string, version: string): Promise<string | null>;
+  /** The project the page around the viewer asks to open first (a link such as /werkplek/monty?project=…). */
+  initialProject?: string;
 };
 
 export type SiteHost = {

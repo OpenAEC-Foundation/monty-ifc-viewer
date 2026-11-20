@@ -316,8 +316,10 @@ async function startWorkplace(host: SiteHost): Promise<void> {
   });
   installWorkplaceTools(tools);
 
-  if (intent?.project && speckle) {
-    const id = intent.project;
+  // After a reload the intent decides; on the first start a link to a project (`initialProject`) opens it directly.
+  const projectId = intent ? intent.project : speckle?.initialProject;
+  if (projectId && speckle) {
+    const id = projectId;
     await startViewer(
       async (viewer, onProgress) => {
         const project = await speckle.model(id);
