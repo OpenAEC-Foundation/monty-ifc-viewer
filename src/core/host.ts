@@ -84,3 +84,14 @@ export function restartWith(intent: Intent): void {
   window.name = INTENT + JSON.stringify(intent);
   window.location.reload();
 }
+
+/**
+ * The Speckle project to open at start. After a reload the intent decides (also "the overview" or a Docs file: then
+ * none); on the first start a link to one project (`speckle.initialProject`, /werkplek/monty?project=…) opens it
+ * directly instead of the overview.
+ */
+export function startProject(intent: Intent | null, speckle: SpeckleHost | undefined): string | null {
+  if (!speckle) return null;
+  const id = intent ? intent.project : speckle.initialProject;
+  return typeof id === "string" && id ? id : null;
+}

@@ -1,6 +1,6 @@
 import { initViewer, type ViewerInstance } from "./core/viewer-setup";
 import { parseStreamParams, loadStream, loadObjects, type StreamParams, type LoadedModel } from "./core/stream-loader";
-import { getHost, readIntent, restartWith, installWorkplaceTools, type SiteHost, type WorkplaceTool } from "./core/host";
+import { getHost, readIntent, restartWith, installWorkplaceTools, startProject, type SiteHost, type WorkplaceTool } from "./core/host";
 import { createProjectBrowser } from "./ui/project-browser";
 import type { IViewer } from "@speckle/viewer";
 import { parseRoute, landingPath } from "./core/route";
@@ -316,10 +316,8 @@ async function startWorkplace(host: SiteHost): Promise<void> {
   });
   installWorkplaceTools(tools);
 
-  // After a reload the intent decides; on the first start a link to a project (`initialProject`) opens it directly.
-  const projectId = intent ? intent.project : speckle?.initialProject;
-  if (projectId && speckle) {
-    const id = projectId;
+  const id = startProject(intent, speckle);
+  if (id && speckle) {
     await startViewer(
       async (viewer, onProgress) => {
         const project = await speckle.model(id);
